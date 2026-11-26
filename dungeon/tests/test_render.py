@@ -12,3 +12,8 @@ def test_render_status_shows_seed_and_depth():
 def test_render_screen_draws_the_player_status_and_message():
     game = Game(seed=42, depth=1, level=LEVEL, player=(2, 1), message="Hello.")
     assert render_screen(game) == ["#####", "#.@.#", "#####", "Seed 42  Depth 1", "Hello."]
+
+
+def test_render_screen_draws_items_on_the_floor():
+    game = Game(seed=42, depth=1, level=LEVEL, player=(1, 1), items={(3, 1): "rope"})
+    assert render_screen(game)[1] == "#@.*#"

@@ -1,5 +1,6 @@
 """Game state and the rules for changing it. Nothing here reads keys or draws."""
 
+from collections import Counter
 from dataclasses import dataclass, field
 
 from dungeon.level import Level, generate_level
@@ -10,7 +11,7 @@ MOVES = {
     "s": (0, 1),
     "d": (1, 0),
 }
-HELP = "Keys: w/a/s/d move, ? help, q quit"
+HELP = "Keys: w/a/s/d move, i inventory, ? help, q quit"
 WALL_MESSAGE = "A wall blocks your way."
 
 
@@ -21,6 +22,13 @@ class Game:
     level: Level
     player: tuple[int, int]
     message: str = field(default="")
+    # Items still on the floor, by position. Filled from the level when it's left empty.
+    items: dict[tuple[int, int], str] | None = None
+    inventory: Counter[str] = field(default_factory=Counter)
+
+    def __post_init__(self) -> None:
+        if self.items is None:
+            self.items = dict(self.level.items)
 
     @classmethod
     def new(cls, seed: int) -> "Game":
@@ -40,6 +48,8 @@ class Game:
             return False
         if key in MOVES:
             self.move(MOVES[key])
+        elif key == "i":
+            self.message = self.describe_inventory()
         else:
             self.message = HELP
         return True
@@ -51,3 +61,14 @@ class Game:
             return
         self.player = target
         self.message = ""
+        if target in self.items:
+            name = self.items.pop(target)
+            self.inventory[name] += 1
+            self.message = f"You pick up the {name}."
+
+    def describe_inventory(self) -> str:
+        if not self.inventory:
+            return "You carry nothing."
+        # Items are listed in the order they were first picked up.
+        carried = [name if n == 1 else f"{name} x{n}" for name, n in self.inventory.items()]
+        return "You carry: " + ", ".join(carried)

@@ -2,7 +2,7 @@ from collections import deque
 
 import pytest
 
-from dungeon.level import FLOOR, WALL, Room, generate_level
+from dungeon.level import FLOOR, ITEM_NAMES, MAX_ITEMS, MIN_ITEMS, WALL, Room, generate_level
 
 SEEDS = range(200)
 
@@ -82,3 +82,18 @@ def test_rooms_with_no_wall_between_them_touch():
     assert room.touches(Room(x=2, y=2, width=3, height=3))
     assert not room.touches(Room(x=5, y=1, width=3, height=3))
     assert not room.touches(Room(x=1, y=5, width=3, height=3))
+
+
+@pytest.mark.parametrize("seed", SEEDS)
+def test_items_are_on_free_floor_away_from_the_start(seed):
+    level = generate_level(seed)
+    spots = [spot for spot, _ in level.items]
+    assert MIN_ITEMS <= len(spots) <= MAX_ITEMS
+    assert len(set(spots)) == len(spots)
+    assert all(level.is_floor(spot) for spot in spots)
+    assert level.rooms[0].centre not in spots
+    assert all(name in ITEM_NAMES for _, name in level.items)
+
+
+def test_the_same_seed_places_the_same_items():
+    assert generate_level(42).items == generate_level(42).items

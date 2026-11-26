@@ -10,6 +10,8 @@ WIDTH = 48
 HEIGHT = 18
 MAX_ROOMS = 7
 ROOM_ATTEMPTS = 60
+ITEM_NAMES = ("torch", "rope", "potion", "gold coin", "old key", "map scrap")
+MIN_ITEMS, MAX_ITEMS = 3, 5
 
 
 @dataclass(frozen=True)
@@ -45,6 +47,8 @@ class Level:
 
     tiles: tuple[str, ...]
     rooms: tuple[Room, ...]
+    # Where each item starts, as (point, name) pairs.
+    items: tuple[tuple[tuple[int, int], str], ...] = ()
 
     @property
     def width(self) -> int:
@@ -89,7 +93,18 @@ def generate_level(seed: int, depth: int = 1) -> Level:
         for x, y in _corridor(rng, a.centre, b.centre):
             grid[y][x] = FLOOR
 
-    return Level(tiles=tuple("".join(row) for row in grid), rooms=tuple(rooms))
+    tiles = tuple("".join(row) for row in grid)
+    # Items are drawn last, so adding them left every seed's layout unchanged.
+    start = rooms[0].centre
+    spots = [
+        (x, y)
+        for y, row in enumerate(tiles)
+        for x, tile in enumerate(row)
+        if tile == FLOOR and (x, y) != start
+    ]
+    count = rng.randint(MIN_ITEMS, MAX_ITEMS)
+    items = tuple((spot, rng.choice(ITEM_NAMES)) for spot in rng.sample(spots, count))
+    return Level(tiles=tiles, rooms=tuple(rooms), items=items)
 
 
 def _corridor(rng: random.Random, start: tuple[int, int], end: tuple[int, int]):

@@ -55,3 +55,32 @@ def test_help_and_unknown_keys_show_the_keys(key):
 @pytest.mark.parametrize("key", ["q", "Q"])
 def test_q_quits(key):
     assert game_at(2, 1).press(key) is False
+
+
+def test_walking_onto_an_item_picks_it_up():
+    game = Game(seed=1, depth=1, level=LEVEL, player=(1, 1), items={(2, 1): "rope"})
+    game.press("d")
+    assert game.items == {}
+    assert game.inventory == {"rope": 1}
+    assert game.message == "You pick up the rope."
+
+
+def test_the_same_item_twice_stacks():
+    items = {(2, 1): "rope", (3, 1): "torch", (3, 2): "rope"}
+    game = Game(seed=1, depth=1, level=LEVEL, player=(1, 1), items=items)
+    for key in "dds":
+        game.press(key)
+    game.press("i")
+    assert game.message == "You carry: rope x2, torch"
+
+
+def test_the_inventory_starts_empty():
+    game = game_at(2, 1)
+    game.press("i")
+    assert game.message == "You carry nothing."
+
+
+def test_a_new_game_takes_its_items_from_the_level():
+    game = Game.new(42)
+    assert game.items == dict(game.level.items)
+    assert game.items is not game.level.items
