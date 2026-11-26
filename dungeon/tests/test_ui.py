@@ -53,9 +53,8 @@ def test_draw_never_writes_past_a_tiny_terminal():
     assert all(len(line) <= 4 for line in screen.text())
 
 
-def test_needed_size_is_the_map_plus_the_text_rows_and_a_free_column():
-    game = Game.new(42)
-    assert ui.needed_size(game) == (game.level.height + 2, game.level.width + 1)
+def test_needed_size_is_the_screen_plus_a_free_column():
+    assert ui.needed_size(Game.new(42)) == (20, 66)
 
 
 def test_play_moves_on_each_key_and_stops_on_q(monkeypatch):

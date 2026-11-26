@@ -122,3 +122,56 @@ def test_the_same_seed_gives_the_same_level_2():
         game.player = game.level.stairs
         game.press(">")
     assert first.level == second.level
+
+
+WIDE = Level(
+    tiles=(
+        "################",
+        "#..............#",
+        "#..#########...#",
+        "################",
+    ),
+    rooms=(Room(1, 1, 2, 2), Room(12, 1, 3, 2)),
+    stairs=(14, 2),
+)
+
+
+def test_a_new_game_has_seen_the_starting_room_and_its_walls_only():
+    game = Game(seed=1, depth=1, level=WIDE, player=(1, 1))
+    room_and_walls = {(x, y) for x in range(0, 4) for y in range(0, 4)}
+    assert game.explored == room_and_walls
+
+
+def test_walking_a_corridor_explores_the_tiles_next_to_you():
+    game = Game(seed=1, depth=1, level=WIDE, player=(1, 1))
+    before = set(game.explored)
+    game.press("d")
+    game.press("d")
+    game.press("d")
+    assert before < game.explored
+    assert (5, 1) in game.explored and (6, 1) not in game.explored
+
+
+def test_explored_tiles_stay_explored():
+    game = Game(seed=1, depth=1, level=WIDE, player=(1, 1))
+    for key in "dddd":
+        game.press(key)
+    seen = set(game.explored)
+    for key in "aaaa":
+        game.press(key)
+    assert seen <= game.explored
+
+
+def test_entering_a_room_explores_all_of_it():
+    game = Game(seed=1, depth=1, level=WIDE, player=(11, 1))
+    game.press("d")
+    assert {(x, y) for x in range(11, 16) for y in range(0, 4)} <= game.explored
+
+
+def test_going_down_forgets_the_last_level_and_sees_the_new_start():
+    game = Game.new(42)
+    game.player = game.level.stairs
+    game.look()
+    game.press(">")
+    fresh = Game(seed=42, depth=2, level=game.level, player=game.player)
+    assert game.explored == fresh.explored

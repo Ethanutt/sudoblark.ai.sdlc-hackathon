@@ -27,10 +27,26 @@ class Game:
     # Items still on the floor, by position. Filled from the level when it's left empty.
     items: dict[tuple[int, int], str] | None = None
     inventory: Counter[str] = field(default_factory=Counter)
+    # Every tile the player has seen on this level. It only grows, until the next level.
+    explored: set[tuple[int, int]] = field(default_factory=set)
 
     def __post_init__(self) -> None:
         if self.items is None:
             self.items = dict(self.level.items)
+        self.look()
+
+    def look(self) -> None:
+        """Mark what the player can see: the tiles next to them, and all of a room they're in."""
+        px, py = self.player
+        self.explored |= {(px + dx, py + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1)}
+        room = self.level.room_at(self.player)
+        if room:
+            # The room's walls too, so its outline shows.
+            self.explored |= {
+                (x, y)
+                for y in range(room.y - 1, room.y + room.height + 1)
+                for x in range(room.x - 1, room.x + room.width + 1)
+            }
 
     @classmethod
     def new(cls, seed: int) -> "Game":
@@ -51,6 +67,8 @@ class Game:
         self.level = generate_level(self.seed, self.depth)
         self.player = self.level.rooms[0].centre
         self.items = dict(self.level.items)
+        self.explored = set()
+        self.look()
         self.message = f"You go down to depth {self.depth}."
 
     def press(self, key: str) -> bool:
@@ -74,6 +92,7 @@ class Game:
             self.message = WALL_MESSAGE
             return
         self.player = target
+        self.look()
         self.message = ""
         if target in self.items:
             name = self.items.pop(target)

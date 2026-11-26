@@ -3,10 +3,7 @@
 import curses
 
 from dungeon.game import Game
-from dungeon.render import render_screen
-
-# Rows under the map: the status line and the message.
-TEXT_ROWS = 2
+from dungeon.render import render_screen, screen_size
 
 
 def run(game: Game) -> None:
@@ -33,7 +30,8 @@ def play(screen, game: Game) -> None:
 
 def needed_size(game: Game) -> tuple[int, int]:
     """Rows and columns the screen needs. The last column stays free, so it's one wider."""
-    return game.level.height + TEXT_ROWS, game.level.width + 1
+    rows, cols = screen_size(game.level)
+    return rows, cols + 1
 
 
 def key_name(key: int) -> str:

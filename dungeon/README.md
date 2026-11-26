@@ -31,7 +31,11 @@ Each key press acts at once, with no Enter:
 | `?` | Show the keys |
 | `q` | Quit |
 
-The terminal needs to be at least 49 columns by 20 rows. The same seed
+You see the room you're in and the tiles next to you. Everything you've
+seen stays on the map, and the mini-map beside it shows the explored
+parts of the whole level.
+
+The terminal needs to be at least 66 columns by 20 rows. The same seed
 always gives the same dungeon. Leave out `--seed` to get a random one:
 the seed is shown under the map, so you can replay it.
 

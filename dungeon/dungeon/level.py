@@ -63,6 +63,9 @@ class Level:
         x, y = point
         return 0 <= x < self.width and 0 <= y < self.height and self.tiles[y][x] == FLOOR
 
+    def room_at(self, point: tuple[int, int]) -> Room | None:
+        return next((room for room in self.rooms if room.contains(point)), None)
+
 
 def generate_level(seed: int, depth: int = 1) -> Level:
     """Generate the level at this depth. The same seed and depth always give the same level."""
