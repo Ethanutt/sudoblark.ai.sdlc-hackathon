@@ -7,6 +7,8 @@ name = "dungeon"
 version = "0.1.0"
 description = "A turn-based ASCII dungeon explorer for the terminal"
 requires-python = ">=3.13"
+# Python on Windows has no curses module built in.
+dependencies = ["windows-curses; sys_platform == 'win32'"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]

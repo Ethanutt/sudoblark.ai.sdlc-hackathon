@@ -13,16 +13,34 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-## Run it
+## Play
 
-From this folder, print the first level of a dungeon and exit:
+From this folder:
+
+```bash
+python -m dungeon --seed 42
+```
+
+Each key press acts at once, with no Enter:
+
+| Key | Does |
+| --- | --- |
+| `w` `a` `s` `d` | Move one step north, west, south or east |
+| `?` | Show the keys |
+| `q` | Quit |
+
+The terminal needs to be at least 49 columns by 20 rows. The same seed
+always gives the same dungeon. Leave out `--seed` to get a random one:
+the seed is shown under the map, so you can replay it.
+
+To print the first screen and exit, without playing:
 
 ```bash
 python -m dungeon --seed 42 --print
 ```
 
-The same seed always gives the same dungeon. Leave out `--seed` to get a
-random one: the seed is shown under the map, so you can replay it.
+On Windows, `pip install -e ".[dev]"` also installs `windows-curses`,
+because Python on Windows has no `curses` module built in.
 
 ## Run the checks
 

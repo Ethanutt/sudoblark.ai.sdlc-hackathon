@@ -4,8 +4,8 @@ import argparse
 import random
 import sys
 
-from dungeon.level import generate_level
-from dungeon.render import render_level, render_status
+from dungeon.game import Game
+from dungeon.render import render_screen
 
 
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
@@ -27,12 +27,16 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     seed = args.seed if args.seed is not None else random.randrange(1_000_000)
-    if not args.print:
-        print("Interactive play isn't built yet. Run with --print to see a level.", file=sys.stderr)
+    game = Game.new(seed)
+    if args.print:
+        print("\n".join(render_screen(game)))
+        return 0
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        print("Playing needs a terminal. Run with --print to see a level.", file=sys.stderr)
         return 1
-    depth = 1
-    print(render_level(generate_level(seed, depth)))
-    print(render_status(seed, depth))
+    from dungeon.ui import run  # Imported here so --print works where curses isn't installed.
+
+    run(game)
     return 0
 
 
