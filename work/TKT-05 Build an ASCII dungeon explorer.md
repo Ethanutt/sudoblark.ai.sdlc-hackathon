@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 ---
 ## Description
 
@@ -38,23 +38,24 @@ A turn-based dungeon explorer drawn in ASCII in the terminal. Each level is gene
 
 | # | Check | How | Status |
 | --- | --- | --- | --- |
-| 1 | The project's checks pass | In `dungeon/`, run `pytest`, `ruff check .` and `ruff format --check .`. All should pass with no warnings | |
-| 2 | The same seed gives the same dungeon | Run `python -m dungeon --seed 42 --print` twice and compare the output: they should match. Run it with `--seed 7 --print`: it should differ | |
-| 3 | Moving works, and walls block | Run `python -m dungeon --seed 42`. Walk the `@` around a room with `w`/`a`/`s`/`d`, one step per press with no Enter, then walk into a wall. The `@` should stay put with a message, not pass through | |
-| 4 | Items go into the inventory | Walk onto an item, then press `i`. The item should be gone from the map and listed. Pick up a second of the same item: it should show as `x2` | |
-| 5 | The stairs lead to a new level | Walk onto `>` and press `>`. A different level should be drawn and the depth should show 2 | |
-| 6 | The mini-map shows only explored parts | At the start, the mini-map should show only the starting room. Walk down a corridor: the mini-map should grow to include it | |
-| 7 | Bad input doesn't crash it | Press keys the game doesn't use, such as `x` and Enter: each should show the key help. Shrink the terminal: it should show a message, not crash. Press `q`: it should exit and leave the terminal as it was | |
+| 1 | The project's checks pass | In `dungeon/`, run `pytest`, `ruff check .` and `ruff format --check .`. All should pass with no warnings | ✅ |
+| 2 | The same seed gives the same dungeon | Run `python -m dungeon --seed 42 --print` twice and compare the output: they should match. Run it with `--seed 7 --print`: it should differ | ✅ |
+| 3 | Moving works, and walls block | Run `python -m dungeon --seed 42`. Walk the `@` around a room with `w`/`a`/`s`/`d`, one step per press with no Enter, then walk into a wall. The `@` should stay put with a message, not pass through | ✅ |
+| 4 | Items go into the inventory | Walk onto an item, then press `i`. The item should be gone from the map and listed. Pick up a second of the same item: it should show as `x2` | ✅ |
+| 5 | The stairs lead to a new level | Walk onto `>` and press `>`. A different level should be drawn and the depth should show 2 | ✅ |
+| 6 | The mini-map shows only explored parts | At the start, the mini-map should show only the starting room. Walk down a corridor: the mini-map should grow to include it | ✅ |
+| 7 | Bad input doesn't crash it | Press keys the game doesn't use, such as `x` and Enter: each should show the key help. Shrink the terminal: it should show a message, not crash. Press `q`: it should exit and leave the terminal as it was | ✅ |
 
 ## Acceptance criteria
 
-- [ ] The person signed off the language, the tooling and the folder name
-- [ ] The person signed off the commit plan
-- [ ] Each level is generated from a seed, with rooms joined by corridors, items to pick up, and stairs down to the next level
-- [ ] The same seed always generates the same dungeon
-- [ ] The player moves one step per command, and can't walk through walls
-- [ ] Items picked up go into an inventory, which the player can list
-- [ ] A mini-map shows the parts of the level the player has explored
+- [x] The person signed off the language, the tooling and the folder name
+- [x] The person signed off the commit plan
+- [x] Each level is generated from a seed, with rooms joined by corridors, items to pick up, and stairs down to the next level
+- [x] The same seed always generates the same dungeon
+- [x] The player moves one step per command, and can't walk through walls
+- [x] Items picked up go into an inventory, which the player can list
+- [x] A mini-map shows the parts of the level the player has explored
+- [x] The inventory line cut off when carrying many items was logged as TKT-06, not fixed here
 
 ## Stretch goals
 
@@ -63,3 +64,20 @@ Once every acceptance criterion is met, a team with time to spare can add these 
 - Monsters that chase the player when they can see them
 - Attacking a monster by walking into it
 - Hit points, and game over when they reach zero
+
+## Pull request
+
+**Title:** `feat(dungeon): build an ASCII dungeon explorer (TKT-05)`
+
+Adds `dungeon/`, a turn-based ASCII dungeon explorer for the terminal, in Python 3.13 with `curses`. Each level is generated from a seed and depth: rooms joined by corridors, items to pick up, and stairs down. The same seed always replays the same dungeon. The player moves one step per `w`/`a`/`s`/`d` press, picks items up into an inventory where duplicates stack, sees only what they've explored, and has a mini-map of the explored parts of the level. The game logic is kept apart from `curses`, so it's tested without a terminal. Combat and the other stretch goals are left out, and an inventory line too long for the screen is logged as TKT-06.
+
+- **Generation:** `level.py` builds seeded rooms, corridors, items and stairs, with every floor tile reachable.
+- **Game rules:** `game.py` handles moving, walls, pickup with stacking, the inventory, the stairs and what has been explored.
+- **Drawing:** `render.py` draws the map, mini-map, status and message lines; `ui.py` is the thin `curses` loop, which handles a terminal that's too small.
+- **Command line:** `python -m dungeon --seed N` plays, and `--print` prints the first screen and exits.
+- **Tooling:** pytest and ruff, set up in `pyproject.toml`, with `windows-curses` on Windows only.
+- **Permissions:** `.claude/settings.json` lets the agent commit and push, at the person's request.
+
+**Testing:** `pytest` (1,257 tests, including generation checks across 200 seeds), `ruff check .` and `ruff format --check .` all pass. The real `curses` game was played in a pseudo-terminal: one step per key, walls blocking, two potions stacking to `x2`, the stairs to depth 2, the mini-map growing, unused keys showing help, a too-small terminal ignoring moves, and `q` restoring the terminal. Reviewers should play `python -m dungeon --seed 42` in a terminal of at least 66×20, walk into a wall, pick up items and press `i`, go down the stairs with `>`, and shrink the terminal.
+
+Fixes TKT-05
