@@ -13,6 +13,17 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
+## Run it
+
+From this folder, print the first level of a dungeon and exit:
+
+```bash
+python -m dungeon --seed 42 --print
+```
+
+The same seed always gives the same dungeon. Leave out `--seed` to get a
+random one: the seed is shown under the map, so you can replay it.
+
 ## Run the checks
 
 From this folder:
