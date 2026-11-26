@@ -4,6 +4,7 @@ from dungeon.game import Game
 
 PLAYER = "@"
 ITEM = "*"
+STAIRS = ">"
 
 
 def render_status(seed: int, depth: int) -> str:
@@ -14,6 +15,9 @@ def render_status(seed: int, depth: int) -> str:
 def render_screen(game: Game) -> list[str]:
     """Everything on screen: the map with the player on it, the status line and the message."""
     rows = [list(row) for row in game.level.tiles]
+    if game.level.stairs:
+        x, y = game.level.stairs
+        rows[y][x] = STAIRS
     for x, y in game.items:
         rows[y][x] = ITEM
     x, y = game.player

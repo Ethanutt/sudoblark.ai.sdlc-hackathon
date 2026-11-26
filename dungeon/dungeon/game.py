@@ -11,7 +11,9 @@ MOVES = {
     "s": (0, 1),
     "d": (1, 0),
 }
-HELP = "Keys: w/a/s/d move, i inventory, ? help, q quit"
+HELP = "wasd move, i inventory, > down, ? help, q quit"
+STAIRS_MESSAGE = "Stairs lead down. Press > to go down."
+NO_STAIRS_MESSAGE = "There are no stairs here."
 WALL_MESSAGE = "A wall blocks your way."
 
 
@@ -41,6 +43,16 @@ class Game:
             message=HELP,
         )
 
+    def descend(self) -> None:
+        if self.player != self.level.stairs:
+            self.message = NO_STAIRS_MESSAGE
+            return
+        self.depth += 1
+        self.level = generate_level(self.seed, self.depth)
+        self.player = self.level.rooms[0].centre
+        self.items = dict(self.level.items)
+        self.message = f"You go down to depth {self.depth}."
+
     def press(self, key: str) -> bool:
         """Apply one key press. Returns False when the player has quit."""
         key = key.lower()
@@ -50,6 +62,8 @@ class Game:
             self.move(MOVES[key])
         elif key == "i":
             self.message = self.describe_inventory()
+        elif key == ">":
+            self.descend()
         else:
             self.message = HELP
         return True
@@ -65,6 +79,8 @@ class Game:
             name = self.items.pop(target)
             self.inventory[name] += 1
             self.message = f"You pick up the {name}."
+        elif target == self.level.stairs:
+            self.message = STAIRS_MESSAGE
 
     def describe_inventory(self) -> str:
         if not self.inventory:

@@ -27,6 +27,7 @@ Each key press acts at once, with no Enter:
 | --- | --- |
 | `w` `a` `s` `d` | Move one step north, west, south or east |
 | `i` | List what you carry. Walk onto a `*` to pick it up |
+| `>` | Go down the stairs, when you're standing on a `>` |
 | `?` | Show the keys |
 | `q` | Quit |
 

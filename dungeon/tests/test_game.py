@@ -1,7 +1,7 @@
 import pytest
 
-from dungeon.game import HELP, WALL_MESSAGE, Game
-from dungeon.level import Level, Room
+from dungeon.game import HELP, NO_STAIRS_MESSAGE, STAIRS_MESSAGE, WALL_MESSAGE, Game
+from dungeon.level import Level, Room, generate_level
 
 # A room three wide and two high, inside a wall.
 LEVEL = Level(tiles=("#####", "#...#", "#...#", "#####"), rooms=(Room(1, 1, 3, 2),))
@@ -84,3 +84,41 @@ def test_a_new_game_takes_its_items_from_the_level():
     game = Game.new(42)
     assert game.items == dict(game.level.items)
     assert game.items is not game.level.items
+
+
+STAIRS_LEVEL = Level(tiles=LEVEL.tiles, rooms=LEVEL.rooms, stairs=(3, 1))
+
+
+def test_stepping_onto_the_stairs_says_how_to_go_down():
+    game = Game(seed=1, depth=1, level=STAIRS_LEVEL, player=(2, 1))
+    game.press("d")
+    assert game.message == STAIRS_MESSAGE
+
+
+def test_going_down_away_from_the_stairs_does_nothing():
+    game = Game(seed=1, depth=1, level=STAIRS_LEVEL, player=(1, 1))
+    game.press(">")
+    assert (game.depth, game.level, game.player) == (1, STAIRS_LEVEL, (1, 1))
+    assert game.message == NO_STAIRS_MESSAGE
+
+
+def test_going_down_the_stairs_makes_the_next_level_and_keeps_the_inventory():
+    game = Game.new(42)
+    game.inventory["rope"] = 2
+    game.player = game.level.stairs
+    game.press(">")
+    level_2 = generate_level(42, depth=2)
+    assert game.depth == 2
+    assert game.level == level_2
+    assert game.player == level_2.rooms[0].centre
+    assert game.items == dict(level_2.items)
+    assert game.inventory == {"rope": 2}
+    assert game.message == "You go down to depth 2."
+
+
+def test_the_same_seed_gives_the_same_level_2():
+    first, second = Game.new(42), Game.new(42)
+    for game in (first, second):
+        game.player = game.level.stairs
+        game.press(">")
+    assert first.level == second.level

@@ -2,7 +2,16 @@ from collections import deque
 
 import pytest
 
-from dungeon.level import FLOOR, ITEM_NAMES, MAX_ITEMS, MIN_ITEMS, WALL, Room, generate_level
+from dungeon.level import (
+    FLOOR,
+    ITEM_NAMES,
+    MAX_ITEMS,
+    MIN_ITEMS,
+    WALL,
+    Room,
+    _stairs,
+    generate_level,
+)
 
 SEEDS = range(200)
 
@@ -97,3 +106,18 @@ def test_items_are_on_free_floor_away_from_the_start(seed):
 
 def test_the_same_seed_places_the_same_items():
     assert generate_level(42).items == generate_level(42).items
+
+
+@pytest.mark.parametrize("seed", SEEDS)
+def test_stairs_are_in_the_last_room_on_a_free_tile(seed):
+    level = generate_level(seed)
+    assert level.rooms[-1].contains(level.stairs)
+    assert not level.rooms[0].contains(level.stairs)
+    assert level.stairs not in {spot for spot, _ in level.items}
+
+
+def test_stairs_move_off_an_item_in_the_corner():
+    room = Room(x=1, y=1, width=4, height=3)
+    corner = (4, 3)
+    assert _stairs(room, ()) == corner
+    assert _stairs(room, ((corner, "rope"),)) == (3, 3)

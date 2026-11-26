@@ -17,3 +17,9 @@ def test_render_screen_draws_the_player_status_and_message():
 def test_render_screen_draws_items_on_the_floor():
     game = Game(seed=42, depth=1, level=LEVEL, player=(1, 1), items={(3, 1): "rope"})
     assert render_screen(game)[1] == "#@.*#"
+
+
+def test_render_screen_draws_the_stairs_and_the_player_on_top():
+    level = Level(tiles=LEVEL.tiles, rooms=LEVEL.rooms, stairs=(3, 1))
+    assert render_screen(Game(seed=42, depth=1, level=level, player=(1, 1)))[1] == "#@.>#"
+    assert render_screen(Game(seed=42, depth=1, level=level, player=(3, 1)))[1] == "#..@#"

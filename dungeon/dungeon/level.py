@@ -49,6 +49,7 @@ class Level:
     rooms: tuple[Room, ...]
     # Where each item starts, as (point, name) pairs.
     items: tuple[tuple[tuple[int, int], str], ...] = ()
+    stairs: tuple[int, int] | None = None
 
     @property
     def width(self) -> int:
@@ -104,7 +105,21 @@ def generate_level(seed: int, depth: int = 1) -> Level:
     ]
     count = rng.randint(MIN_ITEMS, MAX_ITEMS)
     items = tuple((spot, rng.choice(ITEM_NAMES)) for spot in rng.sample(spots, count))
-    return Level(tiles=tiles, rooms=tuple(rooms), items=items)
+    return Level(tiles=tiles, rooms=tuple(rooms), items=items, stairs=_stairs(rooms[-1], items))
+
+
+def _stairs(room: Room, items) -> tuple[int, int]:
+    """The free tile nearest the bottom-right corner of the last room.
+
+    The last room is never the first, where the player starts. Picking the tile without the
+    random generator leaves every seed's layout and items as they were before stairs existed.
+    """
+    taken = {spot for spot, _ in items}
+    for y in reversed(range(room.y, room.y + room.height)):
+        for x in reversed(range(room.x, room.x + room.width)):
+            if (x, y) not in taken:
+                return (x, y)
+    raise ValueError("no free tile for the stairs")  # A room is at least 4x3 and holds 5 items.
 
 
 def _corridor(rng: random.Random, start: tuple[int, int], end: tuple[int, int]):
